@@ -5,12 +5,16 @@ FILE=$(dialog --title "Datei auswählen" --stdout --title "Kopieren/Löschen/Öf
 oeDatum=$(date -d "@$( stat -c '%X' $FILE )" +'%F %T ') #Letztes Öffnen von Datei DATUM
 LDatum=$(date -d "@$( stat -c '%Y' $FILE )" +'%F %T %z') #letzte Änderung DATUM
 Rechte=$(ls -l $FILE)
-Dateityp=$(file $FILE)
+Rechte2=${Rechte%???????????????????????????????????????????}
+Dateityp=$(file $FILE | cut -d '.' -f2)
+
+FILEi=$FILE
+basename "$FILEi"
+Dateiname="$(basename -- $FILEi)"
 
 AUSWAHL=$(dialog --menu "AUSWAHL" --stdout 14 48 10 "1" "Datei öffnen" "2" "Datei löschen" "3" "Datei kopieren" "4" "Datei verschieben" "5" "Datei Attribute anzeigen" "6" "Ordner Inhalt anzeigen")
 clear
 echo "$AUSWAHL"
-
 
 
 case "$AUSWAHL" in
@@ -31,12 +35,13 @@ clear
 echo "Datei wurde verschoben";;
 5) bytegroesse=$(stat -c %s $FILE)
 #MB=$(($bytegroesse/100))
-dialog --msgbox "Die Datei ist $bytegroesse bytes groß   
-Pfad = $FILE
-Letzter Zugriff =  $oeDatum
-Letzte Änderung  = $LDatum
-Rechte = $Rechte
-Dateityp = $Dateityp" 14 48
+dialog --colors --msgbox "\ZbDateiname = \ZB$Dateiname
+\ZbGröße =\ZB $bytegroesse bytes    
+\ZbPfad =\ZB $FILE
+\ZbLetzter Zugriff =\ZB  $oeDatum
+\ZbLetzte Änderung  =\ZB $LDatum
+\ZbRechte =\ZB $Rechte2
+\ZbDateityp =\ZB $Dateityp" 14 48
 
 
 ;;
