@@ -1,37 +1,48 @@
 #!/bin/bash
 #dialog --title "text" --fselect /path/to/dir height width
 function funktion_test() { echo "Hello World"; }
-FILE=$(dialog --title "Datei auswählen" --stdout --title "Kopieren/Löschen/Öffnen" --fselect /home/$USER/Schreibtisch 14 48)
+
+
+dialog  --colors --no-shadow --no-cancel --no-ok --pause "\ZbWillkommen zu DateiBrowser\ZB
+
+Programm wird gestartet in ..." 9 48 2 
+while true;
+do
+
+FILE=$(dialog --backtitle "Pfeiltasten zum navigieren nutzen | Auswahl mit 2x Leertaste treffen | Auswahl mit ENTER bestätigen" --no-cancel --colors --stdout --title "\Zu\ZbDatei oder Ordner auswählen\ZB\ZU" --fselect /home/$USER/Schreibtisch  14 48 )
 
 oeDatum=$(date -d "@$( stat -c '%X' $FILE )" +'%F %T ') #Letztes Öffnen von Datei DATUM | stat -c %X nimmt letzte öffnungsdatum | %F=Datum %T=Uhrzeit %z=Zeitzone bei uns +200
 LDatum=$(date -d "@$( stat -c '%Y' $FILE )" +'%F %T %z') #letzte Änderung DATUM | stat -c %Y nimmt letzte änderungsdatum| %F=Datum %T=Uhrzeit %z=Zeitzone bei uns +200
-Rechte=$(ls -l $FILE)
+Rechte=$(ls -l "$FILE")
 Rechte2=${Rechte%???????????????????????????????????????????} #Fragezeichen entfernen die letzten Zeichen, sonst wäre zu viel Info dabei wie Pfad und Datum/Uhrzeit
-Dateityp=$(file $FILE | cut -d '.' -f2) #cut schneidet vor dem . alles ab, damit nur Dateityp angezeigt wird
-Dateiname=$(basename $FILE) #basename zeigt Dateiname an
-bytegroesse=$(stat -c %s $FILE)
+Dateityp=$(file "$FILE" | cut -d '.' -f2) #cut schneidet vor dem . alles ab, damit nur Dateityp angezeigt wird
+Dateiname=$(basename "$FILE") #basename zeigt Dateiname an
+bytegroesse=$(stat -c %s "$FILE")
 
 
-AUSWAHL=$(dialog --menu "AUSWAHL" --stdout 14 48 10 "1" "Datei öffnen" "2" "Datei löschen" "3" "Datei kopieren" "4" "Datei verschieben" "5" "Datei Attribute anzeigen" "6" "Erweiterte Optionen")
+
+AUSWAHL=$(dialog --colors --menu "\ZbOptionen\ZB" --stdout 14 48 10 "1" "Datei öffnen" "2" "\ZuDatei löschen\ZU" "3" "Datei kopieren" "4" "\ZuDatei verschieben\ZU" "5" "Datei Attribute anzeigen" "6" "\ZuErweiterte Optionen\ZU")
 clear
 echo "$AUSWAHL"
 case "$AUSWAHL" in
 1) 
 echo "Ausgewählte Datei wird geöffnet" 
-xdg-open $FILE 
+xdg-open "$FILE" 
 ;;
-2) rm $FILE
+2) Pfad=${FILE%%$Dateiname}
+cd $Pfad 
+rm "$FILE"
+dialog --msgbox "Datei wurde gelöscht" 14 48
 echo "Ausgewählte Datei wurde gelöscht";; #ORDNER -r LÖSCHEN NOCH PROGRAMMIEREN !!!
 3) Ordner=$(dialog --title " auswählen" --stdout --title "Zielordner auswählen" --dselect /home/$USER/Schreibtisch 14 48 )
-cp $FILE $Ordner
+cp "$FILE" $Ordner
 clear
 echo "Datei wurde kopiert";;
 4) Ordner=$(dialog --title " auswählen" --stdout --title "Zielordner auswählen" --dselect /home/$USER/Schreibtisch 14 48 )
-mv $FILE $Ordner
+mv "$FILE" $Ordner
 clear
 echo "Datei wurde verschoben";;
 5) 
-#MB=$(($bytegroesse/1000000))
 dialog --beep-after --colors --msgbox "\ZbDateiname = \ZB$Dateiname
 \Zb\ZuDateityp =\ZB $Dateityp\ZU
 \ZbGröße =\ZB $bytegroesse bytes    
@@ -40,7 +51,7 @@ dialog --beep-after --colors --msgbox "\ZbDateiname = \ZB$Dateiname
 \Zb\ZuLetzter Zugriff =\ZB  $oeDatum\ZU
 \ZbLetzte Änderung  =\ZB $LDatum" 14 48
 ;;
-6)  AUSWAHL2=$(dialog --menu "AUSWAHL" --stdout 14 48 10 "1" "Datei umbennen" "2" "Ordner erstellen" "3" "Funktion TEST")
+6)  AUSWAHL2=$(dialog --colors --menu "\ZbErweiterte Optionen\ZB" --stdout 14 48 10 "1" "Datei umbennen" "2" "\ZuOrdner erstellen\ZU" "3" "Funktion TEST" "4" "\ZuVerzeichnisse vergleichen\ZU" "5" "Neue Datei anlegen" "6" "\ZuDatei finden\ZU")
 clear
 echo "$AUSWAHL2"
 case "$AUSWAHL2" in
@@ -55,50 +66,39 @@ cd $FILE
 mkdir $NewNameOrdner
 ;;
 3) 
-
 funktion_test 
-
+;;
+4) VergleichsOrdner=$(dialog --title " auswählen" --stdout --title "Zielordner zum vergleichen auswählen" --dselect /home/$USER/ 14 48 )
+Vergleich=$(diff -q "$FILE" $VergleichsOrdner)
+dialog  --beep --colors --title "\Zb\Zu$FILE\ZB verglichen mit \Zb$VergleichsOrdner\ZU\ZB" --msgbox "$Vergleich" 28 96;;
+5) clear
+NewNameFile=$(dialog --stdout --inputbox "Dateinamen bitte eingeben" 14 48 )
+cd $FILE
+touch $NewNameFile
+echo "Neue Datei wurde angelegt";;
+6) searchFile=$(dialog --stdout --inputbox "Dateinamen bitte eingeben" 14 48 )
+cd /home
+foundFile=$(find -name $searchFile*)
+clear
+dialog --colors --title "\Zb $searchFile \ZB wurde in folgenden Ordnern gefunden" --msgbox "
+$foundFile" 20 54
 ;;
 esac
 ;;
 esac
  
- 
- 
-#TestZahl = 1
-#echo TestZahl
-#if [$AUSWAHL == TestZahl]
-#then
-#echo "TEzT" 
-#xdg-open $FILE
-#else
-#echo "$AUSWAHL TEST"
-#fi
-#else
-#Funktion_Löschen($FILE)
-#fi
+MB=$(bc <<< "scale=2;$bytegroesse/1000000")
+echo $MB
+dialog --title "EXIT" \
+--backtitle "GÖKHAN dario rob" \
+--yesno "Wollen sie das Programm beenden ?" 7 60
+response=$?
+case $response in
+   0) break;;
+   1) echo "Programm wird weiter ausgeführt";;
+   255)  break;;
+esac
+done
+dialog --no-cancel --pause "Wird beendet in ..." 9 48 3
+clear
 
-#xdg-open $FILE
-	
-#echo "${FILE} file chosen."
-
-#dialog --yesno "Wollen Sie abbrechen?" 0 0
-#0=ja; 1=nein
-#Bildschirm löschen
-#clear
-#Ausgabe auf Konsole
-#if b[$antwort = 0]
-#then 
-#echo "Die Antwort war JA."
-#else 
-#echo "Die Antwort war NEIN."
-#fi
-
-#Funktion_Löschen (FILE) {
-#Datei = $FILE
-#rm Datei
-#}
-
-#FILEi=$FILE
-#basename "$FILEi"
-#Dateiname="$(basename -- $FILEi)"
