@@ -11,8 +11,8 @@ do
 
 FILE=$(dialog --backtitle "Pfeiltasten zum navigieren nutzen | Auswahl mit 2x Leertaste treffen | Auswahl mit ENTER bestätigen" --no-cancel --colors --stdout --title "\Zu\ZbDatei oder Ordner auswählen\ZB\ZU" --fselect /home/$USER/Schreibtisch  14 48 )
 
-oeDatum=$(date -d "@$( stat -c '%X' $FILE )" +'%F %T ') #Letztes Öffnen von Datei DATUM | stat -c %X nimmt letzte öffnungsdatum | %F=Datum %T=Uhrzeit %z=Zeitzone bei uns +200
-LDatum=$(date -d "@$( stat -c '%Y' $FILE )" +'%F %T %z') #letzte Änderung DATUM | stat -c %Y nimmt letzte änderungsdatum| %F=Datum %T=Uhrzeit %z=Zeitzone bei uns +200
+oeDatum=$(date -d "@$( stat -c '%X' "$FILE" )" +'%F %T ') #Letztes Öffnen von Datei DATUM | stat -c %X nimmt letzte öffnungsdatum | %F=Datum %T=Uhrzeit %z=Zeitzone bei uns +200
+LDatum=$(date -d "@$( stat -c '%Y' "$FILE" )" +'%F %T %z') #letzte Änderung DATUM | stat -c %Y nimmt letzte änderungsdatum| %F=Datum %T=Uhrzeit %z=Zeitzone bei uns +200
 Rechte=$(ls -l "$FILE")
 Rechte2=${Rechte%???????????????????????????????????????????} #Fragezeichen entfernen die letzten Zeichen, sonst wäre zu viel Info dabei wie Pfad und Datum/Uhrzeit
 Dateityp=$(file "$FILE" | cut -d '.' -f2) #cut schneidet vor dem . alles ab, damit nur Dateityp angezeigt wird
@@ -43,9 +43,19 @@ mv "$FILE" $Ordner
 clear
 echo "Datei wurde verschoben";;
 5) 
+if [ $bytegroesse -ge 1000000 ]; then
+Dateigroesse=$(bc <<< "scale=2;$bytegroesse/1000000")
+BYTE=" MB"
+elif [ $bytegroesse -ge 1000 ]; then
+Dateigroesse=$(bc <<< "scale=2;$bytegroesse/1000")
+BYTE="kB"  
+else
+Dateigroesse=$bytegroesse
+BYTE="Byte"
+fi  
 dialog --beep-after --colors --msgbox "\ZbDateiname = \ZB$Dateiname
 \Zb\ZuDateityp =\ZB $Dateityp\ZU
-\ZbGröße =\ZB $bytegroesse bytes    
+\ZbGröße =\ZB $Dateigroesse $BYTE     
 \Zb\ZuPfad =\ZB $FILE\ZU
 \ZbRechte =\ZB $Rechte2
 \Zb\ZuLetzter Zugriff =\ZB  $oeDatum\ZU
@@ -66,7 +76,17 @@ cd $FILE
 mkdir $NewNameOrdner
 ;;
 3) 
-funktion_test 
+funktion_test
+if [ $bytegroesse -ge 1000000 ]; then
+Dateigroesse=$(bc <<< "scale=2;$bytegroesse/1000000")
+BYTE=" MB"
+elif [ $bytegroesse -ge 1000 ]; then
+Dateigroesse=$(bc <<< "scale=2;$bytegroesse/1000")
+BYTE="kB"  
+else
+BYTE="Byte"
+fi 
+dialog --msgbox "Dateigröße= "$Dateigroesse"" 14 48
 ;;
 4) VergleichsOrdner=$(dialog --title " auswählen" --stdout --title "Zielordner zum vergleichen auswählen" --dselect /home/$USER/ 14 48 )
 Vergleich=$(diff -q "$FILE" $VergleichsOrdner)
@@ -87,8 +107,6 @@ esac
 ;;
 esac
  
-MB=$(bc <<< "scale=2;$bytegroesse/1000000")
-echo $MB
 dialog --title "EXIT" \
 --backtitle "GÖKHAN dario rob" \
 --yesno "Wollen sie das Programm beenden ?" 7 60
