@@ -40,11 +40,25 @@ xdg-open "$FILE"
 cd $Pfad 
 if [ -d "$FILE" ]
 then
+dialog --colors --title "Sind Sie sicher?" \
+--yesno "Wollen Sie \Zb"$Dateiname"\ZB wirklich löschen?" 7 60
+antwort=$?
+if [ $antwort -eq 0 ]; then
 rm -r "$FILE"
 dialog --colors --msgbox "Ordner \Zb"$Dateiname"\ZB wurde erfolgreich gelöscht." 14 48
+else
+dialog --colors --msgbox "Ordner \Zb"$Dateiname"\ZB wurde nicht gelöscht." 14 48
+fi
 else 
+dialog --colors --title "Sind Sie sicher?" \
+--yesno "Wollen Sie \Zb"$Dateiname"\ZB wirklich löschen?" 7 60
+antwort=$?
+if [ $antwort -eq 0 ]; then
 rm "$FILE"
 dialog --colors --msgbox "Datei \Zb"$Dateiname"\ZB wurde erfolgreich gelöscht." 14 48
+else
+dialog --colors --msgbox "Datei \Zb"$Dateiname"\ZB wurde nicht gelöscht." 14 48
+fi
 fi ;;
 3) Ordner=$(dialog --title " auswählen" --stdout --title "Zielordner auswählen" --dselect /home/$USER/Schreibtisch 14 48 )
 cp "$FILE" $Ordner
