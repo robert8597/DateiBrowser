@@ -87,7 +87,7 @@ dialog --beep-after --colors --msgbox "\ZbDateiname = \ZB$Dateiname
 \Zb\ZuLetzter Zugriff =\ZB  $oeDatum\ZU
 \ZbLetzte Änderung  =\ZB $LDatum" 14 48
 ;;
-6)  AUSWAHL2=$(dialog --colors --menu "\ZbErweiterte Optionen\ZB" --stdout 14 48 10 "1" "$TYP umbennen" "2" "\ZuOrdner erstellen\ZU" "3" "Funktion TEST" "4" "\ZuVerzeichnisse vergleichen\ZU" "5" "Neue Datei anlegen" "6" "\ZuDatei finden\ZU")
+6)  AUSWAHL2=$(dialog --colors --menu "\ZbErweiterte Optionen\ZB" --stdout 14 48 10 "1" "$TYP umbennen" "2" "\ZuOrdner erstellen\ZU" "3" "Funktion TEST" "4" "\ZuVerzeichnisse vergleichen\ZU" "5" "Neue Datei anlegen" "6" "\ZuDatei finden\ZU" "7" "ZIP entpacken")
 clear
 echo "$AUSWAHL2"
 case "$AUSWAHL2" in
@@ -129,6 +129,8 @@ clear
 dialog --colors --title "\Zb $searchFile \ZB wurde in folgenden Ordnern gefunden" --msgbox "
 $foundFile" 20 54
 ;;
+7) unzip "$FILE"
+dialog --msgbox ""$Dateiname" erfolgreich nach $Pfad entpackt";; 
 esac
 ;;
 esac
