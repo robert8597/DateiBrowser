@@ -1,11 +1,11 @@
 #!/bin/bash
-#dialog --title "text" --fselect /path/to/dir height width
 function funktion_test() { echo "Hello World"; }
 
 
 dialog  --colors --no-shadow --no-cancel --no-ok --pause "\ZbWillkommen zu DateiBrowser\ZB
 
 Programm wird gestartet in ..." 9 48 2 
+
 while true;
 do
 
@@ -18,6 +18,7 @@ Rechte2=${Rechte%???????????????????????????????????????????} #Fragezeichen entf
 Dateityp=$(file "$FILE" | cut -d '.' -f2) #cut schneidet vor dem . alles ab, damit nur Dateityp angezeigt wird
 Dateiname=$(basename "$FILE") #basename zeigt Dateiname an
 bytegroesse=$(stat -c %s "$FILE")
+Pfad=${FILE%%$Dateiname}
 
 ########### PRÜFUNG OB AUWAHL EINE DATEI ODER ORDNER IST ####################
 if [ -d "$FILE" ]
@@ -36,8 +37,7 @@ case "$AUSWAHL" in
 echo "Ausgewählte Datei wird geöffnet" 
 xdg-open "$FILE" 
 ;;
-2) Pfad=${FILE%%$Dateiname}
-cd $Pfad 
+2) cd $Pfad 
 if [ -d "$FILE" ]
 then
 dialog --colors --title "Sind Sie sicher?" \
@@ -91,28 +91,18 @@ dialog --beep-after --colors --msgbox "\ZbDateiname = \ZB$Dateiname
 clear
 echo "$AUSWAHL2"
 case "$AUSWAHL2" in
-1) clear
+1) clear ## KANN VIELLEICHT WEG
 NewName=$(dialog --stdout --inputbox "Neuen Dateinamen bitte eingeben" 14 48 )
-Pfad=${FILE%%$Dateiname}
 cd $Pfad
 mv $Dateiname $NewName
-echo "Datei erfolgreich unbenannt in $NewName";;
+dialog --msgbox "$TYP erfolgreich unbenannt in $NewName" 14 48;;
 2) NewNameOrdner=$(dialog --stdout --inputbox "Neuen Ordnernamen bitte eingeben" 14 48 )
 cd $FILE
 mkdir $NewNameOrdner
 ;;
 3) 
 funktion_test
-if [ $bytegroesse -ge 1000000 ]; then
-Dateigroesse=$(bc <<< "scale=2;$bytegroesse/1000000")
-BYTE=" MB"
-elif [ $bytegroesse -ge 1000 ]; then
-Dateigroesse=$(bc <<< "scale=2;$bytegroesse/1000")
-BYTE="kB"  
-else
-BYTE="Byte"
-fi 
-dialog --msgbox "Dateigröße= "$Dateigroesse"" 14 48
+dialog --msgbox "TEST (nichts passiert)" 14 48
 ;;
 4) VergleichsOrdner=$(dialog --title " auswählen" --stdout --title "Zielordner zum vergleichen auswählen" --dselect /home/$USER/ 14 48 )
 Vergleich=$(diff -q "$FILE" $VergleichsOrdner)
@@ -121,7 +111,7 @@ dialog  --beep --colors --title "\Zb\Zu$FILE\ZB verglichen mit \Zb$VergleichsOrd
 NewNameFile=$(dialog --stdout --inputbox "Dateinamen bitte eingeben" 14 48 )
 cd $FILE
 touch $NewNameFile
-echo "Neue Datei wurde angelegt";;
+dialog --msgbox "Neue Datei \Zb"$NewNameFile"\ZB wurde angelegt" 14 48;;
 6) searchFile=$(dialog --stdout --inputbox "Dateinamen bitte eingeben" 14 48 )
 cd /home
 foundFile=$(find -name $searchFile*)
@@ -129,8 +119,9 @@ clear
 dialog --colors --title "\Zb $searchFile \ZB wurde in folgenden Ordnern gefunden" --msgbox "
 $foundFile" 20 54
 ;;
-7) unzip "$FILE"
-dialog --msgbox ""$Dateiname" erfolgreich nach $Pfad entpackt";; 
+7) cd $Pfad 
+unzip "$FILE" -d $Pfad
+dialog --msgbox ""$Dateiname" erfolgreich nach $Pfad entpackt" 14 48;; 
 esac
 ;;
 esac
