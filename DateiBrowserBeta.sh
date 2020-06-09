@@ -19,11 +19,18 @@ Dateityp=$(file "$FILE" | cut -d '.' -f2) #cut schneidet vor dem . alles ab, dam
 Dateiname=$(basename "$FILE") #basename zeigt Dateiname an
 bytegroesse=$(stat -c %s "$FILE")
 
+########### PRÜFUNG OB AUWAHL EINE DATEI ODER ORDNER IST ####################
+if [ -d "$FILE" ]
+then
+TYP="Ordner"
+else 
+TYP="Datei"
+fi
+#############################################################################
 
-
-AUSWAHL=$(dialog --colors --menu "\ZbOptionen\ZB" --stdout 14 48 10 "1" "Datei öffnen" "2" "\ZuDatei löschen\ZU" "3" "Datei kopieren" "4" "\ZuDatei verschieben\ZU" "5" "Datei Attribute anzeigen" "6" "\ZuErweiterte Optionen\ZU")
+AUSWAHL=$(dialog --colors --menu "\ZbOptionen\ZB" --stdout 14 48 10 "1" "$TYP öffnen" "2" "\Zu$TYP löschen\ZU" "3" "$TYP kopieren" "4" "\Zu$TYP verschieben\ZU" "5" "$TYP Attribute anzeigen" "6" "\ZuErweiterte Optionen\ZU")
 clear
-echo "$AUSWAHL"
+
 case "$AUSWAHL" in
 1) 
 echo "Ausgewählte Datei wird geöffnet" 
@@ -31,9 +38,14 @@ xdg-open "$FILE"
 ;;
 2) Pfad=${FILE%%$Dateiname}
 cd $Pfad 
+if [ -d "$FILE" ]
+then
+rm -r "$FILE"
+dialog --colors --msgbox "Ordner \Zb"$Dateiname"\ZB wurde erfolgreich gelöscht." 14 48
+else 
 rm "$FILE"
-dialog --msgbox "Datei wurde gelöscht" 14 48
-echo "Ausgewählte Datei wurde gelöscht";; #ORDNER -r LÖSCHEN NOCH PROGRAMMIEREN !!!
+dialog --colors --msgbox "Datei \Zb"$Dateiname"\ZB wurde erfolgreich gelöscht." 14 48
+fi ;;
 3) Ordner=$(dialog --title " auswählen" --stdout --title "Zielordner auswählen" --dselect /home/$USER/Schreibtisch 14 48 )
 cp "$FILE" $Ordner
 clear
@@ -61,7 +73,7 @@ dialog --beep-after --colors --msgbox "\ZbDateiname = \ZB$Dateiname
 \Zb\ZuLetzter Zugriff =\ZB  $oeDatum\ZU
 \ZbLetzte Änderung  =\ZB $LDatum" 14 48
 ;;
-6)  AUSWAHL2=$(dialog --colors --menu "\ZbErweiterte Optionen\ZB" --stdout 14 48 10 "1" "Datei umbennen" "2" "\ZuOrdner erstellen\ZU" "3" "Funktion TEST" "4" "\ZuVerzeichnisse vergleichen\ZU" "5" "Neue Datei anlegen" "6" "\ZuDatei finden\ZU")
+6)  AUSWAHL2=$(dialog --colors --menu "\ZbErweiterte Optionen\ZB" --stdout 14 48 10 "1" "$TYP umbennen" "2" "\ZuOrdner erstellen\ZU" "3" "Funktion TEST" "4" "\ZuVerzeichnisse vergleichen\ZU" "5" "Neue Datei anlegen" "6" "\ZuDatei finden\ZU")
 clear
 echo "$AUSWAHL2"
 case "$AUSWAHL2" in
